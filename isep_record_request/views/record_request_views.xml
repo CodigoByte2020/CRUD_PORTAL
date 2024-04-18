@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="record_request_view_tree" model="ir.ui.view">
+        <field name="name">record.request.view.tree</field>
+        <field name="model">record.request</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="op_admission_id"/>
+                <field name="partner_id"/>
+                <field name="batch_id"/>
+                <field name="course_id"/>
+                <field name="application_number"/>
+                <field name="record_request_list_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="record_request_view_form" model="ir.ui.view">
+        <field name="name">record.request.view.form</field>
+        <field name="model">record.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" type="object" string="Confirmar" class="btn btn-primary"
+                            attrs="{'invisible': [('hide_status', '=', True)]}"/>
+                    <field name="state" widget="statusbar" statusbar_visible="on_hold,accepted,observed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="hide_status" invisible="1"/>
+                            <field name="op_admission_id"/>
+                            <field name="partner_id"/>
+                            <field name="batch_id"/>
+                        </group>
+                        <group>
+                            <field name="course_id"/>
+                            <field name="application_number"/>
+                            <field name="record_request_list_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Adjuntos">
+                            <field name="record_request_line_ids" context="{'record_request_id': id}">
+                                <tree editable="bottom">
+                                    <field name="record_request_id" invisible="1"/>
+                                    <field name="document"/>
+                                    <field name="filename"/>
+                                    <field name="file" filename="filename"/>
+                                    <field name="comment"/>
+                                    <field name="state"
+                                           widget="badge"
+                                           decoration-info="state == 'on_hold'"
+                                           decoration-success="state == 'accepted'"
+                                           decoration-warning="state == 'observed'"/>
+                                    <button name="action_observe" type="object" string="Observar" class="btn btn-primary"/>
+                                    <button name="action_accept" type="object" string="Aceptar" class="btn btn-primary"/>
+                                </tree>
+                            </field>
+                            <field name="description" nolabel="1" placeholder="Descripción ..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="record_request_action" model="ir.actions.act_window">
+        <field name="name">Solicitudes</field>
+        <field name="res_model">record.request</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="record_request_menu"
+              name="Solicitudes"
+              action="record_request_action"
+              sequence="10"
+              parent="registers_menu"/>
+</odoo>
