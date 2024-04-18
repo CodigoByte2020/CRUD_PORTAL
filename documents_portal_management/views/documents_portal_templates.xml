@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_my_home_menu_documents" name="Portal layout : documents menu entries" inherit_id="portal.portal_breadcrumbs" priority="22">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'documents' or documents" t-attf-class="breadcrumb-item #{'active ' if not documents else ''}">
+                <a t-if="documents" t-attf-href="/my/documents?{{ keep_query() }}">Documents</a>
+                <t t-else="">Documents</t>
+            </li>
+
+            <li t-if="page_name == 'upload_portal_documents' or upload_portal_documents" t-attf-class="breadcrumb-item #{'active ' if not documents else ''}">
+                <a t-attf-href="/my/documents?{{ keep_query() }}">Documents</a>
+                <li class="breadcrumb-item">
+                    <span>Upload Portal Document</span>
+                </li>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_documents" name="Show Documents" inherit_id="portal.portal_my_home" priority="25">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Documents</t>
+                <t t-set="url" t-value="'/my/documents'"/>
+                <t t-set="placeholder_count" t-value="'documents_count'"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_my_documents" name="My Documents">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Documents</t>
+                <div class="ms-lg-2" t-if="request.env.user">
+                    <a class="btn btn-primary btn-sm" name='upload_portal_documents' title="Upload Portal Document" href="/my/documents/upload_portal_documents">
+                        <i class="fa fa-upload"/> Upload Portal Document
+                    </a>
+                </div>
+            </t>
+            <t t-if="not documents">
+                <p>There are currently no documents for your account.</p>
+            </t>
+
+            <t t-if="documents" t-call="portal.portal_table">
+                <t t-foreach="grouped_documents" t-as="document">
+                    <thead>
+                        <tr t-attf-class="{{'thead-light' if not groupby == 'none' else ''}}">
+                            <th t-if="groupby == 'none'">Document #</th>
+                            <th t-else="">
+                                <em class="font-weight-normal text-muted">Document #:</em>
+                                <span t-field="document[0].folder_id.name"/>
+                            </th>
+                            <th class="text-left">Name</th>
+                            <th class="text-left">Description</th>
+                            <th class="text-left">Mime Type</th>
+                            <th class="text-left">Create Date</th>
+                            <th class="text-left">Folder</th>
+                            <th class="text-center">Download</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="document" t-as="document">
+                            <t t-set="document_url" t-value="base_url + '/web/content/ir.attachment/' + str(document.id)"/>
+                            <tr>
+                                <td>
+                                    <t t-if="document.is_personal_directory and not document.res_model">
+                                        <span class="badge badge-success"><i class="fa fa-user"></i></span>
+                                    </t>
+                                    <t t-if="document.res_model">
+                                        <span class="badge badge-primary"><i class="fa fa-user"></i></span>
+                                    </t>
+                                    <a target="_blank" t-att-href="document_url + '/datas?download=true'">
+                                        <t t-esc="document.code"/>
+                                    </a>
+                                    <t t-if="document.is_shared_file">
+                                        <span>(Owner: </span><span t-field="document.create_uid.name"/><span>)</span>
+                                    </t>
+                                </td>
+                                <td>
+                                    <span t-field="document.name"/>
+                                </td>
+                                <td>
+                                    <span t-field="document.description"/>
+                                </td>
+                                <td>
+                                    <span t-field="document.mimetype"/>
+                                </td>
+                                <td>
+                                    <span t-field="document.create_date"/>
+                                </td>
+                                <td>
+                                    <span t-field="document.folder_id.name"/>
+                                    <t t-if="document.is_shared_file">
+                                        <span class="badge badge-info"><i class="fa fa-share"></i></span>
+                                    </t>                                    
+                                </td>
+                                <td style="text-align: center;">
+                                    <a target="new" t-att-href="document_url + '/datas?download=true'" title="Download" class="mr4">
+                                        <i class="fa fa-download fa-1x" role="img" aria-label="Download"></i>
+                                    </a>
+                                    <a target="_blank" t-att-href="document_url + '/datas'" title="Open">
+                                        <i class="fa fa-newspaper-o fa-1x" role="img" aria-label="Open"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="my_attendance_upload_portal_documents" name="Upload Portal Document">
+        <t t-call="portal.portal_layout">
+            <t t-call="portal.portal_record_layout">
+                <t t-set="card_header">
+                    <div class="row no-gutters">
+                        <div class="col-md">
+                            <h5 class="mb-2 mb-md-0">
+                                <small class="text-muted">Upload Portal Document</small>
+                            </h5>
+                        </div>
+                    </div>
+                </t>
+                <t t-set="card_body">
+                    <div class="o_summary">
+                        <div class="o_documents_container d-flex">
+                            <form action="/my/documents/upload_portal_documents/upload" method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <div class="form-group row">
+                                    <label for="staticDocuments" class="col-sm-4 col-form-label">
+                                        Choose File
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <input 
+                                            name="upload_documents" 
+                                            id="upload_documents" 
+                                            type="file" 
+                                            class="form-control"
+                                            multiple="true" 
+                                            data-show-upload="true" 
+                                            data-show-caption="true"
+                                            lass="file"
+                                            data-show-preview="true"
+                                            required="required"/>
+                                    </div>
+                                </div>  
+                                <div class="form-group row">
+                                    <div class="col-sm-4"></div>
+                                    <div class="col-sm-8">
+                                        <button id="btn_upload_docs" class="btn btn-primary mt16">Upload</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

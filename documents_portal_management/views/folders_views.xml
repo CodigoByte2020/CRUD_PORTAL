@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="folder_view_form">
+            <field name="name">documents.folders form</field>
+            <field name="model">documents.folders</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <field name="is_personal_directory" invisible="1"/>
+                        <field name="is_portal_directory" invisible="1"/>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_see_attachments" type="object" class="oe_stat_button" icon="fa-file-text-o" attrs="{'invisible' : [('attachment_count', '=', 0)]}" groups="documents_portal_management.group_document_manager">
+                                <div class="o_field_widget o_stat_info">
+                                    <span class="o_stat_value">
+                                        <field name="attachment_count"/>
+                                    </span>
+                                    <span class="o_stat_text">Documents</span>
+                                </div>
+                            </button>
+                        </div>
+                        <field name="image" widget="image" class="oe_avatar" options="{&quot;preview_image&quot;: &quot;image&quot;, &quot;size&quot;: [90, 90]}"/>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1>
+                                <field name="name" placeholder="E.g. Finance"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="model_id" 
+                                    attrs="{'invisible':['|',('is_personal_directory', '=', True),('is_portal_directory', '=', True)]}"/>
+                                <field name="parent_folder_id" 
+                                    domain="[('id', '!=', id)]"
+                                    attrs="{'invisible':['|',('is_personal_directory', '=', True),('is_portal_directory', '=', True)]}"/>
+                            </group>
+                            <group>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Documents">
+                                <field name="attachment_ids" style="pointer-events:none;">
+                                    <tree string="Documents" create="false" delete="false" >
+                                        <field name="name" />
+                                        <field name="type" />                                        
+                                        <field name="create_uid" />
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Subfolders" attrs="{'invisible':['|',('is_personal_directory', '=', True),('is_portal_directory', '=', True)]}">
+                                <field name="children_folder_ids" context="{'default_parent_directory': active_id}">
+                                    <tree string="Subfolders" create="false" delete="false">
+                                        <field name="name" />
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="folder_view_kanban" model="ir.ui.view">
+            <field name="name">documents.folders kanban</field>
+            <field name="model">documents.folders</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_mobile" archivable="false">
+                    <field name="id"/>
+                    <field name="name"/>
+                    <field name="image"/>
+                    <field name="model_id"/>
+                    <field name="parent_folder_id"/>
+                    <field name="folder_count"/>
+                    <field name="attachment_count"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_global_click">
+                                <div class="o_kanban_image">
+                                    <t t-if="record.image.raw_value">
+                                        <img t-att-src="kanban_image('documents.folders', 'image', record.id.raw_value)" alt="Folder"/>
+                                    </t>
+                                    <t t-if="!record.image.raw_value">
+                                        <img src="/documents_portal_management/static/src/img/folder.png" class="o_kanban_image" alt="Folder"/>
+                                    </t>
+                                </div>
+                               <div class="oe_kanban_details">
+                                    <div class="o_kanban_record_top">
+                                        <div class="o_kanban_record_headings mt4">
+                                            <strong class="o_kanban_record_title"><span><t t-esc="record.name.value"/></span></strong>
+                                        </div>
+                                        <span class="badge" t-if="record.attachment_count.value>0">
+                                            <i class="fa fa-fw fa-file"/>
+                                            <t t-esc="record.attachment_count.value"/>
+                                        </span>
+                                        <span class="badge" t-if="record.folder_count.value>0">
+                                            <i class="fa fa-fw fa-folder"/>
+                                            <t t-esc="record.folder_count.value"/>
+                                        </span>
+                                    </div>
+                                     <div class="o_kanban_record_subtitle">
+                                        <t t-if="record.model_id and record.model_id.raw_value"> 
+                                            <ul>
+                                                <li>Model: <field name="model_id"/></li>
+                                            </ul>                                                                                     
+                                        </t>
+                                        <t t-if="record.parent_folder_id.raw_value">
+                                            <ul>
+                                                <li>Parent: <field name="parent_folder_id"/></li>
+                                            </ul>                                            
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="folder_view_tree" model="ir.ui.view">
+            <field name="name">documents.folders tree</field>
+            <field name="model">documents.folders</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="sequence" widget="handle"/>
+                    <field name="display_name" string="Folders"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="model_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="folder_view_search" model="ir.ui.view">
+            <field name="name">documents.folders search</field>
+            <field name="model">documents.folders</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="model_id"/>
+                    <field name="parent_folder_id"/>
+                    <filter string="Parent Folder" name="by_parent" domain="[]" context="{'group_by': 'parent_folder_id'}"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="folder_action" model="ir.actions.act_window">
+            <field name="name">Folders</field>
+            <field name="res_model">documents.folders</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('documents_portal_management.folder_view_kanban')}),
+            (0, 0, {'view_mode': 'form', 'view_id': False})]"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create new Document Folder
+                </p>
+            </field>
+        </record>
+
+        <menuitem name="Configuration" id="documents_portal_management.configuration" parent="documents_portal_management.menu_root" groups="documents_portal_management.group_document_user" sequence="2"/>
+        <menuitem name="Folders" id="documents_portal_management.folder_menu" parent="documents_portal_management.configuration" action="folder_action" groups="documents_portal_management.group_document_manager" sequence="1"/>
+
+    </data>
+</odoo>

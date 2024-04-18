@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem name="Documents" id="documents_portal_management.menu_root" groups="documents_portal_management.group_document_user" web_icon="documents_portal_management,static/description/icon.png"/>9
+    <menuitem name="Documents" id="documents_portal_management.menu_documents" parent="documents_portal_management.menu_root" groups="documents_portal_management.group_document_user" sequence="1"/>
+</odoo>
